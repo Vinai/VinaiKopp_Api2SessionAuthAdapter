@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config>
+    <global>
+        <models>
+            <vinaikopp_api2sessionauthadapter>
+                <class>VinaiKopp_Api2SessionAuthAdapter_Model</class>
+            </vinaikopp_api2sessionauthadapter>
+        </models>
+    </global>
+</config>
