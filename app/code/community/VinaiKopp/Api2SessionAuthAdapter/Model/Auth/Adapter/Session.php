@@ -25,10 +25,14 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
      * @param Mage_Core_Model_Cookie $cookie
      * @param Mage_Customer_Model_Session $session
      */
-    public function __construct(Mage_Core_Model_Cookie $cookie = null, Mage_Customer_Model_Session $session = null)
+    public function __construct($cookie = null, $session = null)
     {
-        $this->_cookie = $cookie;
-        $this->_session = $session;
+        if ($cookie) {
+            $this->_cookie = $cookie;
+        }
+        if ($session) {
+            $this->_session = $session;
+        }
     }
 
     /**
