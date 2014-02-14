@@ -56,6 +56,18 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_SessionTest
         return new $this->_class($mockCookie, $mockSession);
     }
     
+    public function testClassConfiguration()
+    {
+        $factoryName = 'vinaikopp_api2sessionauthadapter/auth_adapter_session';
+        $this->assertEquals(
+            $factoryName,
+            (string) Mage::getConfig()->getNode('global/api2/auth_adapters/customer_session/model')
+        );
+        $class = Mage::getConfig()->getModelClassName($factoryName);
+        $this->assertEquals($this->_class, $class);
+        $this->assertTrue(class_exists($this->_class));
+    }
+    
     /**
      * @test
      */
