@@ -6,5 +6,20 @@
                 <class>VinaiKopp_Api2SessionAuthAdapter_Model</class>
             </vinaikopp_api2sessionauthadapter>
         </models>
+        <helpers>
+            <vinaikopp_api2sessionauthadapter>
+                <class>VinaiKopp_Api2SessionAuthAdapter_Helper</class>
+            </vinaikopp_api2sessionauthadapter>
+        </helpers>
+        <api2>
+            <auth_adapters>
+                <session module="vinaikopp_api2sessionauthadapter" translate="label">
+                    <model>vinaikopp_api2sessionauthadapter/auth_adapter_session</model>
+                    <label>Session</label>
+                    <enabled>1</enabled>
+                    <order>20</order>
+                </session>
+            </auth_adapters>
+        </api2>
     </global>
 </config>
