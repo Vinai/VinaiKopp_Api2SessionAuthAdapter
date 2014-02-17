@@ -8,17 +8,20 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_SessionTest
 
     /**
      * @param mixed $frontendCookie
+     * @param string $storeCode
      * @return PHPUnit_Framework_MockObject_MockObject
      */
-    protected function _getMockCookie($frontendCookie = false)
+    protected function _getMockCookie($frontendCookie = false, $storeCode = null)
     {
         $mockCookie = $this->getMockBuilder('Mage_Core_Model_Cookie')
             ->disableOriginalConstructor()
             ->getMock();
         $mockCookie->expects($this->any())
             ->method('get')
-            ->with('frontend')
-            ->will($this->returnValue($frontendCookie));
+            ->will($this->returnValueMap(array(
+                array('frontend', $frontendCookie),
+                array('store', $storeCode)
+            )));
         return $mockCookie;
     }
     
@@ -26,7 +29,7 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_SessionTest
      * @param int $customerId
      * @return PHPUnit_Framework_MockObject_MockObject
      */
-    protected function _getMockSession($customerId = null)
+    protected function _getMockCustomerSession($customerId = null)
     {
         $mockSession = $this->getMockBuilder('Mage_Customer_Model_Session')
             ->disableOriginalConstructor()
@@ -41,19 +44,35 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_SessionTest
     }
     
     /**
+     * @return PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function _getMockCoreSession()
+    {
+        $mockSession = $this->getMockBuilder('Mage_Core_Model_Session')
+            ->disableOriginalConstructor()
+            ->getMock();
+        return $mockSession;
+    }
+    
+    /**
      * @param PHPUnit_Framework_MockObject_MockObject $mockCookie
-     * @param PHPUnit_Framework_MockObject_MockObject $mockSession
+     * @param PHPUnit_Framework_MockObject_MockObject $mockCustomerSession
+     * @param PHPUnit_Framework_MockObject_MockObject $mockCoreSession
      * @return VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
      */
-    protected function _getInstance($mockCookie = null, $mockSession = null)
+    protected function _getInstance(
+        $mockCookie = null, $mockCustomerSession = null, $mockCoreSession = null)
     {
         if (! $mockCookie) {
             $mockCookie = $this->_getMockCookie();
         }
-        if (! $mockSession) {
-            $mockSession = $this->_getMockSession();
+        if (! $mockCustomerSession) {
+            $mockCustomerSession = $this->_getMockCustomerSession();
         }
-        return new $this->_class($mockCookie, $mockSession);
+        if (! $mockCoreSession) {
+            $mockCoreSession = $this->_getMockCoreSession();
+        }
+        return new $this->_class($mockCookie, $mockCustomerSession, $mockCoreSession);
     }
     
     public function testClassConfiguration()
@@ -118,26 +137,81 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_SessionTest
 
         $model = new $this->_class($mockCookie);
         
+        $result = $mockCookie->get('frontend');
+        
         $this->assertFalse($model->hasFrontendSession());
     }
 
     /**
      * @test
      */
-    public function itHasAMethodGetSession()
+    public function itHasAMethodGetCustomerSession()
     {
-        $this->assertTrue(is_callable(array($this->_class, 'getSession')));
+        $this->assertTrue(is_callable(array($this->_class, 'getCustomerSession')));
     }
 
     /**
      * @test
-     * @depends itHasAMethodGetSession
+     * @depends itHasAMethodGetCustomerSession
      */
     public function itReturnsACustomerSessionModel()
     {
         $model = $this->_getInstance();
 
-        $this->assertInstanceOf('Mage_Customer_Model_Session', $model->getSession());
+        $this->assertInstanceOf('Mage_Customer_Model_Session', $model->getCustomerSession());
+    }
+
+    /**
+     * @test
+     */
+    public function itHasAMethodGetCoreSession()
+    {
+        $this->assertTrue(is_callable(array($this->_class, 'getCoreSession')));
+    }
+
+    /**
+     * @test
+     * @depends itHasAMethodGetCoreSession
+     */
+    public function itReturnsACoreSessionModel()
+    {
+        $model = $this->_getInstance();
+
+        $this->assertInstanceOf('Mage_Core_Model_Session', $model->getCoreSession());
+    }
+
+    /**
+     * @test
+     */
+    public function itHasAMethodGetFrontendStoreCode()
+    {
+        $this->assertTrue(is_callable(array($this->_class, 'getFrontendStoreCode')));
+    }
+
+    /**
+     * @test
+     * @depends itHasAMethodGetFrontendStoreCode
+     */
+    public function itReturnsTheStoreCookieValueIfSet()
+    {
+        $mockCookie = $this->_getMockCookie(false, 'test');
+        
+        $model = $this->_getInstance($mockCookie);
+        $this->assertEquals('test', $model->getFrontendStoreCode());
+    }
+
+    /**
+     * @test
+     * @depends itHasAMethodGetFrontendStoreCode
+     */
+    public function itReturnsTheDefaultStoreIfNoStoreCookieIsSet()
+    {
+        $mockCookie = $this->_getMockCookie();
+
+        $expected = Mage::app()->getDefaultStoreView()->getCode();
+
+        $model = $this->_getInstance($mockCookie);
+        $this->assertEquals($expected, $model->getFrontendStoreCode());
     }
 
     /**
@@ -154,8 +228,8 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_SessionTest
      */
     public function itReturnsUserParamsCustomerForValidSession()
     {
-        $mockCookie = $this->_getMockCookie('1234567890'); // dummy session ID
-        $mockSession = $this->_getMockSession(1); // dummy customer ID
+        $mockCookie = $this->_getMockCookie('1234567890', 'default'); // dummy session ID + store
+        $mockSession = $this->_getMockCustomerSession(1); // dummy customer ID
         $model = $this->_getInstance($mockCookie, $mockSession);
         $mockRequest = $this->getMock('Mage_Api2_Model_Request');
         
@@ -172,7 +246,7 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_SessionTest
      */
     public function itReturnsUserParamsNullIfNoFrontendCookieExists()
     {
-        $mockCookie = $this->_getMockCookie(false); // no session ID
+        $mockCookie = $this->_getMockCookie(false, 'default'); // no session ID
         $model = $this->_getInstance($mockCookie);
         $mockRequest = $this->getMock('Mage_Api2_Model_Request');
         
@@ -189,8 +263,8 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_SessionTest
      */
     public function itReturnsUserParamsNullIfNotLoggedInButFrontendCookieExists()
     {
-        $mockCookie = $this->_getMockCookie('1234567890'); // dummy session ID
-        $mockSession = $this->_getMockSession(null); // no customer ID
+        $mockCookie = $this->_getMockCookie('1234567890', 'default'); // dummy session ID
+        $mockSession = $this->_getMockCustomerSession(null); // no customer ID
         $model = $this->_getInstance($mockCookie, $mockSession);
         $mockRequest = $this->getMock('Mage_Api2_Model_Request');
         

@@ -57,21 +57,28 @@ class VinaiKopp_Api2SessionAuthAdapter_ExtensionTest extends VinaiKopp_Framework
             ->getMock();
         $mockCookie->expects($this->atLeastOnce())
             ->method('get')
-            ->with('frontend')
-            ->will($this->returnValue('1234567890')); // dummy session ID
+            ->will($this->returnValueMap(array(
+                array('frontend', '1234567'), // dummy session ID
+                array('store', 'default')
+            )));
         Mage::unregister('_singleton/core/cookie');
         Mage::register('_singleton/core/cookie', $mockCookie);
         
-        $mockSession = $this->getMockBuilder('Mage_Customer_Model_Session')
+        $mockCustomerSession = $this->getMockBuilder('Mage_Customer_Model_Session')
             ->disableOriginalConstructor()
             ->getMock();
-        $mockSession->expects($this->once())
+        $mockCustomerSession->expects($this->once())
             ->method('getCustomerId')
             ->will($this->returnValue(1)); // dummy customer ID
-        $mockSession->expects($this->atLeastOnce())
+        $mockCustomerSession->expects($this->atLeastOnce())
             ->method('isLoggedIn')
             ->will($this->returnValue(true));
-        Mage::register('_singleton/customer/session', $mockSession);
+        Mage::register('_singleton/customer/session', $mockCustomerSession);
+
+        $mockCoreSession = $this->getMockBuilder('Mage_Core_Model_Session')
+            ->disableOriginalConstructor()
+            ->getMock();
+        Mage::register('_singleton/core/session', $mockCoreSession);
 
         Mage::app()->getRequest()->setParam('type', 'rest');
         
