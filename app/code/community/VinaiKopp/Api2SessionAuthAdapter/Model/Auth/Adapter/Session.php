@@ -8,16 +8,12 @@
 class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
     extends Mage_Api2_Model_Auth_Adapter_Abstract
 {
-    const USER_TYPE_GUEST = 'guest';
     const USER_TYPE_CUSTOMER = 'customer';
 
-    // See Mage_Core_Controller_Front_Action::SESSION_NAMESPACE
-    const SESSION_NAMESPACE = 'frontend';
-
     /**
-     * @var Mage_Core_Model_Cookie
+     * @var VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_Session
      */
-    protected $_cookie;
+    protected $_helper;
 
     /**
      * @var Mage_Customer_Model_Session
@@ -25,39 +21,27 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
     protected $_customerSession;
 
     /**
-     * @var Mage_Core_Model_Session
-     */
-    protected $_coreSession;
-
-    /**
-     * @param Mage_Core_Model_Cookie $cookie
+     * @param VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_Session $helper
      * @param Mage_Customer_Model_Session $customerSession
-     * @param Mage_Core_Model_Session $coreSession
      */
-    public function __construct($cookie = null, $customerSession = null, $coreSession = null)
+    public function __construct($helper = null, $customerSession = null)
     {
-        if ($cookie) {
-            $this->_cookie = $cookie;
+        if ($helper) {
+            $this->_helper = $helper;
         }
         if ($customerSession) {
             $this->_customerSession = $customerSession;
         }
-        if ($coreSession) {
-            $this->_coreSession = $coreSession;
-        }
     }
-
-    /**
-     * @return Mage_Core_Model_Cookie
-     */
-    public function getCookie()
+    
+    public function getHelper()
     {
-        if (!$this->_cookie) {
+        if (!$this->_helper) {
             // @codeCoverageIgnoreStart
-            $this->_cookie = Mage::app()->getCookie();
+            $this->_helper = Mage::helper('vinaikopp_api2sessionauthadapter/frontend_session');
         }
         // @codeCoverageIgnoreEnd
-        return $this->_cookie;
+        return $this->_helper;
     }
 
     /**
@@ -71,52 +55,6 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
         }
         // @codeCoverageIgnoreEnd
         return $this->_customerSession;
-    }
-
-    /**
-     * @return Mage_Core_Model_Session
-     */
-    public function getCoreSession()
-    {
-        if (!$this->_coreSession) {
-            // @codeCoverageIgnoreStart
-            $this->_coreSession = Mage::getSingleton(
-                'core/session',
-                array('name' => self::SESSION_NAMESPACE)
-            );
-        }
-        // @codeCoverageIgnoreEnd
-        return $this->_coreSession;
-    }
-
-    /**
-     * Return true if the current request contains a frontend session cookie
-     *
-     * @return bool
-     */
-    public function hasFrontendSession()
-    {
-        return (bool)$this->getCookie()->get(self::SESSION_NAMESPACE);
-    }
-
-    /**
-     * @return string
-     */
-    public function getFrontendStoreCode()
-    {
-        $store = $this->getCookie()->get('store');
-        if (! $store) {
-            $store = Mage::app()->getDefaultStoreView()->getCode();
-        }
-        return $store;
-    }
-
-    /**
-     * Start the frontend session
-     */
-    public function startFrontendSession()
-    {
-        $this->getCoreSession()->start();
     }
 
     /**
@@ -145,12 +83,11 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
      */
     public function isApplicableToRequest(Mage_Api2_Model_Request $request)
     {
-        if ($this->hasFrontendSession()) {
+        $helper = $this->getHelper();
+        if ($helper->hasFrontendSession()) {
 
-            $store = $this->getFrontendStoreCode();
-            Mage::app()->setCurrentStore($store);
-            
-            $this->startFrontendSession();
+            $helper->initFrontendStore();
+            $helper->startFrontendSession();
             
             return $this->getCustomerSession()->isLoggedIn();
         }
