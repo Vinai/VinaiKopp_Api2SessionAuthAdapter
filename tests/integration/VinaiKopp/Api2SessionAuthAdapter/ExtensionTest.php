@@ -88,6 +88,10 @@ class VinaiKopp_Api2SessionAuthAdapter_ExtensionTest extends VinaiKopp_Framework
         Mage::register('_singleton/api2/response', $response);
 
         $response->expects($this->once())
+            ->method('setMimeType')
+            ->withAnyParameters()
+            ->will($this->returnSelf());
+        $response->expects($this->once())
             ->method('setBody')
             ->withAnyParameters()
             ->will($this->returnSelf());
