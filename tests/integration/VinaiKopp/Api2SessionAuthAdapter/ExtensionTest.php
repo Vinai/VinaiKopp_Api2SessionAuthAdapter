@@ -74,7 +74,31 @@ class VinaiKopp_Api2SessionAuthAdapter_ExtensionTest extends VinaiKopp_Framework
             ->method('isLoggedIn')
             ->will($this->returnValue(true));
         Mage::register('_singleton/customer/session', $mockCustomerSession);
+        
+        $mockAddressCollection = $this->getMockBuilder('Mage_Customer_Model_Resource_Address_Collection')
+            ->disableOriginalConstructor()
+            ->setMethods(array('setCurPage', 'getIterator'))
+            ->getMock();
+        $mockAddressCollection->expects($this->any())
+            ->method('setCurPage')
+            ->will($this->returnSelf());
+        $mockAddressCollection->expects($this->any())
+            ->method('getIterator')
+            ->will($this->returnValue(new ArrayIterator(array())));
+        
+        $mockCustomer = $this->getMock('Mage_Customer_Model_Customer');
+        $mockCustomer->expects($this->atLeastOnce())
+            ->method('getId')
+            ->will($this->returnValue(1)); // the same dummy customer ID
+        $mockCustomer->expects($this->once())
+            ->method('load')
+            ->will($this->returnSelf());
+        $mockCustomer->expects($this->once())
+            ->method('getAddressesCollection')
+            ->will($this->returnValue($mockAddressCollection));
+        Mage::getConfig()->setModelMock('customer/customer', $mockCustomer);
 
+        
         $mockCoreSession = $this->getMockBuilder('Mage_Core_Model_Session')
             ->disableOriginalConstructor()
             ->getMock();
