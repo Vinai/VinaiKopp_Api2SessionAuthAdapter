@@ -170,6 +170,7 @@ class VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_SessionTest extends Vinai
     {
         $mockCookie = $this->_getMockCookie(false);
 
+        /** @var VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_Session $model */
         $model = new $this->_class($mockCookie);
 
         $this->assertFalse($model->hasFrontendSession());
