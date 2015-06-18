@@ -1,0 +1,16 @@
+{
+  "name":"vinaikopp/api2sessionauthadapter",
+  "type":"magento-module",
+  "license":"OSL-3.0",
+  "homepage":"https://github.com/Vinai/VinaiKopp_Api2SessionAuthAdapter",
+  "description":"Session Auth Adapter for Magento REST Interaction from the same host.",
+  "authors":[
+    {
+      "name":"Vinai Kopp",
+      "email":"vinai@netzarbeiter.com"
+    }
+  ],
+  "require":{
+    "magento-hackathon/magento-composer-installer":"*"
+  }
+}
