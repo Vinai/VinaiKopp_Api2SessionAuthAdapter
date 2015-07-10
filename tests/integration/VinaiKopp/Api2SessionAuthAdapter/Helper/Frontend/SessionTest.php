@@ -144,14 +144,14 @@ class VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_SessionTest extends Vinai
     /**
      * @test
      */
-    public function itHasAMethodHasFrontendSession()
+    public function itHasAMethodHasFrontendSessionCookie()
     {
-        $this->assertTrue(is_callable(array($this->_class, 'hasFrontendSession')));
+        $this->assertTrue(is_callable(array($this->_class, 'hasFrontendSessionCookie')));
     }
 
     /**
      * @test
-     * @depends itHasAMethodHasFrontendSession
+     * @depends itHasAMethodHasFrontendSessionCookie
      */
     public function itReturnsTrueWhenAFrontendCookieIsPresent()
     {
@@ -159,12 +159,12 @@ class VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_SessionTest extends Vinai
 
         $model = $this->_getInstance($mockCookie);
 
-        $this->assertTrue($model->hasFrontendSession());
+        $this->assertTrue($model->hasFrontendSessionCookie());
     }
 
     /**
      * @test
-     * @depends itHasAMethodHasFrontendSession
+     * @depends itHasAMethodHasFrontendSessionCookie
      */
     public function itReturnsFalseWhenNoFrontendCookieIsPresent()
     {
@@ -173,41 +173,7 @@ class VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_SessionTest extends Vinai
         /** @var VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_Session $model */
         $model = new $this->_class($mockCookie);
 
-        $this->assertFalse($model->hasFrontendSession());
-    }
-
-    /**
-     * @test
-     */
-    public function itHasAMethodGetFrontendStoreCode()
-    {
-        $this->assertTrue(is_callable(array($this->_class, 'getFrontendStoreCode')));
-    }
-
-    /**
-     * @test
-     * @depends itHasAMethodGetFrontendStoreCode
-     */
-    public function itReturnsTheStoreCookieValueIfSet()
-    {
-        $mockCookie = $this->_getMockCookie(false, 'test');
-
-        $model = $this->_getInstance($mockCookie);
-        $this->assertEquals('test', $model->getFrontendStoreCode());
-    }
-
-    /**
-     * @test
-     * @depends itHasAMethodGetFrontendStoreCode
-     */
-    public function itReturnsTheDefaultStoreIfNoStoreCookieIsSet()
-    {
-        $mockCookie = $this->_getMockCookie();
-
-        $expected = Mage::app()->getDefaultStoreView()->getCode();
-
-        $model = $this->_getInstance($mockCookie);
-        $this->assertEquals($expected, $model->getFrontendStoreCode());
+        $this->assertFalse($model->hasFrontendSessionCookie());
     }
 
     /**
@@ -231,57 +197,4 @@ class VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_SessionTest extends Vinai
         $model = $this->_getInstance(null, $mockSession);
         $model->startFrontendSession();
     }
-
-    /**
-     * @test
-     * @depends testClassExists
-     */
-    public function itHasAMethodInitFrontendStore()
-    {
-        $this->assertTrue(is_callable(array($this->_class, 'initFrontendStore')));
-    }
-
-    /**
-     * @test
-     * @depends itHasAMethodInitFrontendStore
-     */
-    public function itCallsSetCurrentStoreFromCookieOnTheApp()
-    {
-        $mockCookie = $this->_getMockCookie(null, 'test'); // test store code
-        $model = $this->_getInstance($mockCookie);
-        $mockApp = $this->getMockBuilder('Mage_Core_Model_App')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $mockApp->expects($this->once())
-            ->method('setCurrentStore')
-            ->with('test');
-        $model->setApp($mockApp);
-        $model->initFrontendStore();
-    }
-
-    /**
-     * @test
-     * @depends itHasAMethodInitFrontendStore
-     */
-    public function itCallsSetCurrentStoreFromDefaultOnTheApp()
-    {
-        $model = $this->_getInstance();
-        
-        $mockStore = $this->getMock('Mage_Core_Model_Store');
-        $mockStore->expects($this->once())
-            ->method('getCode')
-            ->will($this->returnValue('test'));
-            
-        $mockApp = $this->getMockBuilder('Mage_Core_Model_App')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $mockApp->expects($this->once())
-            ->method('getDefaultStoreView')
-            ->will($this->returnValue($mockStore));
-        $mockApp->expects($this->once())
-            ->method('setCurrentStore')
-            ->with('test');
-        $model->setApp($mockApp);
-        $model->initFrontendStore();
-    }
-} 
+}
