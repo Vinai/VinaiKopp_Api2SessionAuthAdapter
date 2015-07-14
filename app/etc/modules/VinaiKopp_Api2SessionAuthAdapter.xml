@@ -5,6 +5,8 @@
             <active>true</active>
             <codePool>community</codePool>
             <depends>
+                <Mage_Core/>
+                <Mage_Customer/>
                 <Mage_Api2/>
             </depends>
         </VinaiKopp_Api2SessionAuthAdapter>

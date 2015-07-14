@@ -1,12 +1,8 @@
 <?php
 
 
-class VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_Session
-    extends Mage_Core_Helper_Abstract
+class VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_Session extends Mage_Core_Helper_Abstract
 {
-    // See Mage_Core_Controller_Front_Action::SESSION_NAMESPACE
-    const SESSION_NAMESPACE = 'frontend';
-    
     /**
      * @var Mage_Core_Model_Session
      */
@@ -31,7 +27,7 @@ class VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_Session
             // @codeCoverageIgnoreStart
             $this->_coreSession = Mage::getSingleton(
                 'core/session',
-                array('name' => self::SESSION_NAMESPACE)
+                array('name' => Mage_Core_Controller_Front_Action::SESSION_NAMESPACE)
             );
         }
         // @codeCoverageIgnoreEnd
@@ -93,41 +89,26 @@ class VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_Session
      *
      * @return bool
      */
-    public function hasFrontendSession()
+    public function hasFrontendSessionCookie()
     {
-        return (bool)$this->getCookie()->get(self::SESSION_NAMESPACE);
-    }
-
-    /**
-     * @return string
-     */
-    public function getFrontendStoreCode()
-    {
-        $store = $this->getCookie()->get('store');
-        if (! $store) {
-            $store = $this->getApp()->getDefaultStoreView()->getCode();
-        }
-        return $store;
+        return (bool)$this->getCookie()->get(Mage_Core_Controller_Front_Action::SESSION_NAMESPACE);
     }
 
     /**
      * Start the frontend session
+     *
+     * @return $this
+     *
+     * @throws Mage_Api2_Exception
      */
     public function startFrontendSession()
     {
-        $this->getCoreSession()->start();
-        return $this;
-    }
+        if($this->getApp()->getStore()->isAdmin()) {
+            throw new Mage_Api2_Exception('Access denied', Mage_Api2_Model_Server::HTTP_FORBIDDEN);
+        }
 
-    /**
-     * Set the current store
-     * 
-     * @return $this
-     */
-    public function initFrontendStore()
-    {
-        $store = $this->getFrontendStoreCode();
-        $this->getApp()->setCurrentStore($store);
+        $this->getCoreSession()->start();
+
         return $this;
     }
-} 
+}

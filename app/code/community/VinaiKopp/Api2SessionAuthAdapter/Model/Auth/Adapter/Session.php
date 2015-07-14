@@ -84,11 +84,8 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
     public function isApplicableToRequest(Mage_Api2_Model_Request $request)
     {
         $helper = $this->getHelper();
-        if ($helper->hasFrontendSession()) {
-
-            $helper->initFrontendStore();
+        if ($helper->hasFrontendSessionCookie()) {
             $helper->startFrontendSession();
-            
             return $this->getCustomerSession()->isLoggedIn();
         }
         return false;
