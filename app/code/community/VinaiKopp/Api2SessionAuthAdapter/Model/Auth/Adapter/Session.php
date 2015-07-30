@@ -33,7 +33,7 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
             $this->_customerSession = $customerSession;
         }
     }
-    
+
     public function getHelper()
     {
         if (!$this->_helper) {
@@ -84,10 +84,16 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
     public function isApplicableToRequest(Mage_Api2_Model_Request $request)
     {
         $helper = $this->getHelper();
-        if ($helper->hasFrontendSessionCookie()) {
-            $helper->startFrontendSession();
-            return $this->getCustomerSession()->isLoggedIn();
+
+        // This auth adapter is for frontend use only
+        if ($helper->getApp()->getStore()->isAdmin()) {
+            return false;
         }
-        return false;
+
+        // Ensure frontend sessions are initialized using the proper cookie name
+        $helper->startFrontendSession();
+
+        // We are only applicable if the customer is logged in already
+        return $this->getCustomerSession()->isLoggedIn();
     }
 }
