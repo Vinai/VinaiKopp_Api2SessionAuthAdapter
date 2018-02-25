@@ -51,7 +51,13 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
     {
         if (!$this->_customerSession) {
             // @codeCoverageIgnoreStart
+            // Temporarily choose a suitable frontend store
+            $oldStore = $this->getHelper()->getApp()->getStore()->getId();
+            $this->getHelper()->getApp()->initSpecified(
+                @$_SERVER['MAGE_RUN_CODE'] ?: '',
+                @$_SERVER['MAGE_RUN_TYPE'] ?: 'store');
             $this->_customerSession = Mage::getSingleton('customer/session');
+            $this->getHelper()->getApp()->setCurrentStore($oldStore);
         }
         // @codeCoverageIgnoreEnd
         return $this->_customerSession;
