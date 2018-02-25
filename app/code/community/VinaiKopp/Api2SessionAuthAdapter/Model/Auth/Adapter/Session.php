@@ -85,11 +85,6 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
     {
         $helper = $this->getHelper();
 
-        // This auth adapter is for frontend use only
-        if ($helper->getApp()->getStore()->isAdmin()) {
-            return false;
-        }
-
         // Ensure frontend sessions are initialized using the proper cookie name
         $helper->startFrontendSession();
 
