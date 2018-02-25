@@ -67,12 +67,10 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
      */
     public function getUserParams(Mage_Api2_Model_Request $request)
     {
-        $userParamsObj = (object)array('type' => null, 'id' => null);
-        if ($this->isApplicableToRequest($request)) {
-            $userParamsObj->id = $this->getCustomerSession()->getCustomerId();
-            $userParamsObj->type = self::USER_TYPE_CUSTOMER;
-        }
-        return $userParamsObj;
+        return (object)array(
+            'id' => $this->getCustomerSession()->getCustomerId(),
+            'type' => self::USER_TYPE_CUSTOMER
+        );
     }
 
     /**
