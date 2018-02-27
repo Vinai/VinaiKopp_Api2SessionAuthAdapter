@@ -89,10 +89,14 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
     {
         $helper = $this->getHelper();
 
-        // Ensure frontend sessions are initialized using the proper cookie name
-        $helper->startFrontendSession();
+        if ($helper->hasFrontendSessionCookie()) {
+            // Ensure frontend sessions are initialized using the proper cookie name
+            $helper->startFrontendSession();
+    
+            // We are only applicable if the customer is logged in already
+            return $this->getCustomerSession()->isLoggedIn();
+        }
 
-        // We are only applicable if the customer is logged in already
-        return $this->getCustomerSession()->isLoggedIn();
+        return false;
     }
 }
