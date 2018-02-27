@@ -51,7 +51,13 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
     {
         if (!$this->_customerSession) {
             // @codeCoverageIgnoreStart
+            // Temporarily choose a suitable frontend store
+            $oldStore = $this->getHelper()->getApp()->getStore()->getId();
+            $this->getHelper()->getApp()->initSpecified(
+                @$_SERVER['MAGE_RUN_CODE'] ?: '',
+                @$_SERVER['MAGE_RUN_TYPE'] ?: 'store');
             $this->_customerSession = Mage::getSingleton('customer/session');
+            $this->getHelper()->getApp()->setCurrentStore($oldStore);
         }
         // @codeCoverageIgnoreEnd
         return $this->_customerSession;
@@ -67,12 +73,10 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
      */
     public function getUserParams(Mage_Api2_Model_Request $request)
     {
-        $userParamsObj = (object)array('type' => null, 'id' => null);
-        if ($this->isApplicableToRequest($request)) {
-            $userParamsObj->id = $this->getCustomerSession()->getCustomerId();
-            $userParamsObj->type = self::USER_TYPE_CUSTOMER;
-        }
-        return $userParamsObj;
+        return (object)array(
+            'id' => $this->getCustomerSession()->getCustomerId(),
+            'type' => self::USER_TYPE_CUSTOMER
+        );
     }
 
     /**
@@ -84,11 +88,6 @@ class VinaiKopp_Api2SessionAuthAdapter_Model_Auth_Adapter_Session
     public function isApplicableToRequest(Mage_Api2_Model_Request $request)
     {
         $helper = $this->getHelper();
-
-        // This auth adapter is for frontend use only
-        if ($helper->getApp()->getStore()->isAdmin()) {
-            return false;
-        }
 
         // Ensure frontend sessions are initialized using the proper cookie name
         $helper->startFrontendSession();

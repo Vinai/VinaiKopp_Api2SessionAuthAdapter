@@ -103,10 +103,6 @@ class VinaiKopp_Api2SessionAuthAdapter_Helper_Frontend_Session extends Mage_Core
      */
     public function startFrontendSession()
     {
-        if($this->getApp()->getStore()->isAdmin()) {
-            throw new Mage_Api2_Exception('Access denied', Mage_Api2_Model_Server::HTTP_FORBIDDEN);
-        }
-
         $this->getCoreSession()->start();
 
         return $this;
